@@ -26,11 +26,13 @@ func (s Server) Run(port string) {
 
 	http.HandleFunc("/api/nextdate", s.Handler.HandleDate)
 
-	http.HandleFunc("/api/task", s.Handler.HandleTask)
+	http.HandleFunc("/api/task", s.Handler.AuthMiddleware(s.Handler.HandleTask))
 
-	http.HandleFunc("/api/tasks", s.Handler.GetTasksHandle)
+	http.HandleFunc("/api/tasks", s.Handler.AuthMiddleware(s.Handler.GetTasksHandle))
 
-	http.HandleFunc("/api/task/done", s.Handler.DoneTaskeHandle)
+	http.HandleFunc("/api/task/done", s.Handler.AuthMiddleware(s.Handler.DoneTaskeHandle))
+
+	http.HandleFunc("/api/signin", s.Handler.Auth)
 
 	fmt.Println("Server starting at", port)
 

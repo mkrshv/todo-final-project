@@ -3,6 +3,7 @@ module test
 go 1.22.3
 
 require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/stretchr/testify v1.9.0
 	modernc.org/sqlite v1.33.1
