@@ -1,4 +1,4 @@
-package taskservice
+package task
 
 import (
 	"fmt"
@@ -21,10 +21,12 @@ type TaskHandler interface {
 	GetNextRepeatDate() (string, error)
 }
 
+const DateFormat = "20060102"
+
 // Возвращает новую дату для задачи в зависимости от значения, указанного в поле repeat.
 func (t *Task) GetNextRepeatDate() (string, error) {
 	if t.Date == "" {
-		t.Date = time.Now().Format("20060102")
+		t.Date = time.Now().Format(DateFormat)
 	}
 	switch {
 	case strings.HasPrefix(t.Repeat, "d "):
@@ -38,7 +40,7 @@ func (t *Task) GetNextRepeatDate() (string, error) {
 			return "", fmt.Errorf("перенос задачи на 400 и более дней: %s;", t.Repeat)
 		}
 
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
@@ -50,10 +52,10 @@ func (t *Task) GetNextRepeatDate() (string, error) {
 			taskDate = taskDate.AddDate(0, 0, daysNum)
 		}
 
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 
 	case t.Repeat == "y":
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
 		}
@@ -62,7 +64,7 @@ func (t *Task) GetNextRepeatDate() (string, error) {
 		for taskDate.Before(time.Now()) {
 			taskDate = taskDate.AddDate(1, 0, 0)
 		}
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 
 	case strings.HasPrefix(t.Repeat, "w "):
 		weekdaysStr := strings.Split(strings.TrimPrefix(t.Repeat, "w "), ",")
@@ -80,7 +82,7 @@ func (t *Task) GetNextRepeatDate() (string, error) {
 			}
 			weekdaysInt[i] = num
 		}
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
 		}
@@ -104,7 +106,7 @@ func (t *Task) GetNextRepeatDate() (string, error) {
 			}
 			taskDate = taskDate.AddDate(0, 0, 1)
 		}
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 
 	case strings.HasPrefix(t.Repeat, "m "):
 		splitted := strings.Split(t.Repeat, " ")
@@ -129,7 +131,7 @@ func (t *Task) GetNextRepeatDate() (string, error) {
 			return daysNum[i] < daysNum[j]
 		})
 
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
 		}
@@ -197,7 +199,7 @@ func (t *Task) GetNextRepeatDate() (string, error) {
 
 			taskDate = taskDate.AddDate(0, 0, 1)
 		}
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 	case t.Repeat == "":
 		return "", nil
 	default:
@@ -238,7 +240,7 @@ func checkFirstMonth(daysNum []int, taskDate time.Time) time.Time {
 // Возвращает новую дату для задачи в зависимости от значения, указанного в поле repeat.
 // Сделана для прохождения тестов. Логика не отличается от используемой в программе функции.
 func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
-	nowTime, err := time.Parse("20060102", now)
+	nowTime, err := time.Parse(DateFormat, now)
 	if err != nil {
 		return "", err
 	}
@@ -254,7 +256,7 @@ func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
 			return "", fmt.Errorf("перенос задачи на 400 и более дней: %s;", t.Repeat)
 		}
 
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
@@ -266,10 +268,10 @@ func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
 			taskDate = taskDate.AddDate(0, 0, daysNum)
 		}
 
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 
 	case t.Repeat == "y":
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
 		}
@@ -278,7 +280,7 @@ func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
 		for taskDate.Before(nowTime) {
 			taskDate = taskDate.AddDate(1, 0, 0)
 		}
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 
 	case strings.HasPrefix(t.Repeat, "w "):
 		weekdaysStr := strings.Split(strings.TrimPrefix(t.Repeat, "w "), ",")
@@ -296,7 +298,7 @@ func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
 			}
 			weekdaysInt[i] = num
 		}
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
 		}
@@ -320,7 +322,7 @@ func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
 			}
 			taskDate = taskDate.AddDate(0, 0, 1)
 		}
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 
 	case strings.HasPrefix(t.Repeat, "m "):
 		splitted := strings.Split(t.Repeat, " ")
@@ -345,7 +347,7 @@ func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
 			return daysNum[i] < daysNum[j]
 		})
 
-		taskDate, err := time.Parse("20060102", t.Date)
+		taskDate, err := time.Parse(DateFormat, t.Date)
 		if err != nil {
 			return "", fmt.Errorf("ошибка при считывании даты: %s", t.Date)
 		}
@@ -413,11 +415,10 @@ func (t *Task) GetNextRepeatDateTest(now string) (string, error) {
 
 			taskDate = taskDate.AddDate(0, 0, 1)
 		}
-		return taskDate.Format("20060102"), nil
+		return taskDate.Format(DateFormat), nil
 	case t.Repeat == "":
 		return "", nil
 	default:
-		fmt.Println("11111111111")
 		return "", fmt.Errorf("неверный формат поля 't.Repeat': %s", t.Repeat)
 	}
 }
