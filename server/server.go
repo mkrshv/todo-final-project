@@ -3,7 +3,8 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"test/handlers"
+
+	"todo/handlers"
 )
 
 type Server struct {

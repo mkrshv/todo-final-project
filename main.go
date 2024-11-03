@@ -2,7 +2,8 @@ package main
 
 import (
 	"os"
-	"test/server"
+
+	"todo/server"
 )
 
 func main() {

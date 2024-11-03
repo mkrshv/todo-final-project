@@ -8,8 +8,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"test/repository"
-	taskservice "test/task-service"
+
+	"todo/repository"
+	"todo/task"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -40,7 +41,7 @@ func NewHandler() Handler {
 
 // Обработчик возвращающий следующую даты для выполненной задачи.
 func (h Handler) HandleDate(w http.ResponseWriter, r *http.Request) {
-	task := new(taskservice.Task)
+	task := new(task.Task)
 	task.Date = r.FormValue("date")
 	task.Repeat = r.FormValue("repeat")
 	now := r.FormValue("now")
@@ -112,14 +113,14 @@ func JsonResponse(w http.ResponseWriter, statusCode int, id string) {
 
 // Обработчик размещающий задачу в репозитории, если она  соответствует требованиям.
 func (h Handler) PostHandle(w http.ResponseWriter, r *http.Request) {
-	var newTask taskservice.Task
+	var newTask task.Task
 	var buf bytes.Buffer
 
 	_, err := buf.ReadFrom(r.Body)
 
 	if err != nil {
 		log.Print(err)
-		JsonErr(w, http.StatusBadRequest, "1234455N")
+		JsonErr(w, http.StatusBadRequest, "Не удалось прочитать тело запроса")
 		return
 	}
 
@@ -152,7 +153,7 @@ func (h Handler) GetTasksHandle(w http.ResponseWriter, r *http.Request) {
 			JsonErr(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		respMap := make(map[string][]taskservice.Task)
+		respMap := make(map[string][]task.Task)
 		respMap["tasks"] = taskSLice
 		resp, err := json.Marshal(respMap)
 		if err != nil {
@@ -170,7 +171,7 @@ func (h Handler) GetTasksHandle(w http.ResponseWriter, r *http.Request) {
 		JsonErr(w, http.StatusBadRequest, err.Error())
 	}
 
-	respMap := make(map[string][]taskservice.Task)
+	respMap := make(map[string][]task.Task)
 	respMap["tasks"] = taskSLice
 
 	resp, err := json.Marshal(respMap)
@@ -178,11 +179,8 @@ func (h Handler) GetTasksHandle(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 		JsonErr(w, http.StatusInternalServerError, err.Error())
 	}
-	k := make(map[string][]taskservice.Task)
-	err = json.Unmarshal(resp, &k)
-	if err != nil {
-		log.Print(err)
-	}
+	k := make(map[string][]task.Task)
+	_ = json.Unmarshal(resp, &k)
 
 	w.Write(resp)
 }
@@ -211,7 +209,7 @@ func (h Handler) GetTaskHandle(w http.ResponseWriter, r *http.Request) {
 func (h Handler) PutTaskHandle(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
-	task := taskservice.Task{}
+	task := task.Task{}
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
 		log.Print(err)
