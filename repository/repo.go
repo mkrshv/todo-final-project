@@ -8,8 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	taskservice "test/task-service"
 	"time"
+
+	task "todo/task"
 
 	_ "modernc.org/sqlite"
 )
@@ -26,13 +27,13 @@ type Repository struct {
 
 // Интерфейс для работы с репозиторием
 type RepositoryProcesser interface {
-	AddTask(task taskservice.Task) (string, error)
-	GetTaskList() ([]taskservice.Task, error)
-	GetTask(id string) (taskservice.Task, error)
-	UpdateTask(task taskservice.Task) error
+	AddTask(task task.Task) (string, error)
+	GetTaskList() ([]task.Task, error)
+	GetTask(id string) (task.Task, error)
+	UpdateTask(task task.Task) error
 	DoneTask(id string) error
 	DeleteTask(id string) error
-	SearchTask(search string) ([]taskservice.Task, error)
+	SearchTask(search string) ([]task.Task, error)
 }
 
 // Создает (в случае необходимости) и открывает доступ к БД. Возвращает ссылку на объект типа Repository.
@@ -81,7 +82,7 @@ func dbCheck() string {
 }
 
 // Добавляет задачу в БД.
-func (repo *Repository) AddTask(task taskservice.Task) (string, error) {
+func (repo *Repository) AddTask(task task.Task) (string, error) {
 	nextDate, err := task.GetNextRepeatDate()
 	if err != nil {
 		return "", err
@@ -129,8 +130,8 @@ func (repo *Repository) AddTask(task taskservice.Task) (string, error) {
 }
 
 // Возвращает список (срез) 10 ближайших по дате задач.
-func (repo *Repository) GetTaskList() ([]taskservice.Task, error) {
-	result := []taskservice.Task{}
+func (repo *Repository) GetTaskList() ([]task.Task, error) {
+	result := []task.Task{}
 
 	rows, err := repo.Repo.Query("SELECT * FROM scheduler ORDER BY date LIMIT 10")
 
@@ -139,7 +140,7 @@ func (repo *Repository) GetTaskList() ([]taskservice.Task, error) {
 	}
 
 	for rows.Next() {
-		task := taskservice.Task{}
+		task := task.Task{}
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
 			fmt.Println(err)
@@ -157,8 +158,8 @@ func (repo *Repository) GetTaskList() ([]taskservice.Task, error) {
 }
 
 // Возвращает задачу по id в виде структуры типа Task.
-func (repo *Repository) GetTask(id string) (taskservice.Task, error) {
-	task := taskservice.Task{}
+func (repo *Repository) GetTask(id string) (task.Task, error) {
+	task := task.Task{}
 	if id == "" {
 		return task, fmt.Errorf(ErrNoId)
 	}
@@ -171,7 +172,7 @@ func (repo *Repository) GetTask(id string) (taskservice.Task, error) {
 }
 
 // Обновляет задачу, переданную в запросе.
-func (repo *Repository) UpdateTask(task taskservice.Task) error {
+func (repo *Repository) UpdateTask(task task.Task) error {
 	_, err := task.GetNextRepeatDate()
 	if err != nil {
 		return err
@@ -254,8 +255,8 @@ func (repo *Repository) DeleteTask(id string) error {
 	return nil
 }
 
-func (repo *Repository) SearchTask(search string) ([]taskservice.Task, error) {
-	res := []taskservice.Task{}
+func (repo *Repository) SearchTask(search string) ([]task.Task, error) {
+	res := []task.Task{}
 	if date, err := time.Parse("02.01.2006", search); err == nil {
 		rows, err := repo.Repo.Query("SELECT * FROM scheduler WHERE date = :date", sql.Named("date", date.Format(DateFormat)))
 		if err != nil {
@@ -263,7 +264,7 @@ func (repo *Repository) SearchTask(search string) ([]taskservice.Task, error) {
 		}
 
 		for rows.Next() {
-			task := taskservice.Task{}
+			task := task.Task{}
 			err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 			if err != nil {
 				return res, err
@@ -283,7 +284,7 @@ func (repo *Repository) SearchTask(search string) ([]taskservice.Task, error) {
 	}
 
 	for rows.Next() {
-		task := taskservice.Task{}
+		task := task.Task{}
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
 			return res, err
